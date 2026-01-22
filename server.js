@@ -1,9 +1,11 @@
+// server.js (FULL UPDATED)
+
 require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const http = require("http");                 // ✅ UPDATED (new)
-const { Server } = require("socket.io");      // ✅ UPDATED (new)
+const http = require("http");
+const { Server } = require("socket.io");
 
 const app = express();
 const connectDB = require("./config/db");
@@ -13,7 +15,7 @@ app.use(cors());
 
 // Middleware to parse JSON
 app.use(express.json());
- 
+
 // Import routes
 const alertRoutes = require("./routes/alertRoutes");
 const authRoutes = require("./routes/authRoutes");
@@ -27,20 +29,20 @@ app.get("/", (req, res) => {
 app.use("/api/alert", alertRoutes);
 app.use("/api/auth", authRoutes);
 
-// ✅ UPDATED (new): Create HTTP server from Express app
+// Create HTTP server from Express app
 const server = http.createServer(app);
 
-// ✅ UPDATED (new): Attach Socket.IO to the server
+// Attach Socket.IO to the server
 const io = new Server(server, {
   cors: {
     origin: "*",
   },
 });
 
-// ✅ UPDATED (new): Make io accessible in controllers via req.app.get("io")
+// Make io accessible in controllers via req.app.get("io")
 app.set("io", io);
 
-// ✅ UPDATED (new): Socket connection logs (optional but helpful)
+// Socket connection logs (optional but helpful)
 io.on("connection", (socket) => {
   console.log("🟢 Socket client connected:", socket.id);
 
@@ -49,16 +51,19 @@ io.on("connection", (socket) => {
   });
 });
 
-// ✅ UPDATED (new): Start server ONLY after DB connects
+// ✅ UPDATED: Use dynamic port for Render (and fallback to 5000 locally)
+const PORT = process.env.PORT || 5000; // ✅ UPDATED
+
+// Start server ONLY after DB connects
 const startServer = async () => {
   try {
     console.log("✅ About to connect DB...");
     await connectDB();
     console.log("✅ MongoDB connected. Starting server...");
 
-    // ✅ UPDATED (new): Use server.listen instead of app.listen
-    server.listen(5000, () => {
-      console.log("Server running on port 5000");
+    // ✅ UPDATED: Use server.listen(PORT) instead of hardcoding 5000
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`); // ✅ UPDATED
     });
   } catch (err) {
     console.error("❌ Failed to start server:", err.message);
@@ -66,4 +71,4 @@ const startServer = async () => {
   }
 };
 
-startServer(); // ✅ UPDATED (new)
+startServer();
