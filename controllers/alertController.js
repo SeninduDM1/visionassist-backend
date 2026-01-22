@@ -2,7 +2,8 @@ const Alert = require("../models/Alert");
 
 exports.fallAlert = async (req, res) => {
   try {
-    const { userId, latitude, longitude } = req.body;
+    const userId = req.user.id; 
+    const { latitude, longitude } = req.body;
 
     const alert = await Alert.create({
       userId,
@@ -11,9 +12,9 @@ exports.fallAlert = async (req, res) => {
       longitude
     });
 
-    // 🔔 ✅ UPDATED: Emit real-time FALL alert via Socket.IO
-    const io = req.app.get("io");              // ✅ UPDATED
-    io.emit("fallAlert", {                    // ✅ UPDATED
+    //Emit real-time FALL alert via Socket.IO
+    const io = req.app.get("io");              
+    io.emit("fallAlert", {                    
       userId,
       latitude,
       longitude,
@@ -21,11 +22,11 @@ exports.fallAlert = async (req, res) => {
     });
 
     res.json({
-      message: "Fall alert saved & broadcasted", // ✅ UPDATED (text change)
+      message: "Fall alert saved & broadcasted", 
       alertId: alert._id
     });
   } catch (err) {
-    console.error(err);                         // ✅ UPDATED (better debugging)
+    console.error(err);                         
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -43,9 +44,9 @@ exports.sosAlert = async (req, res) => {
       longitude
     });
 
-    // 🔔 ✅ UPDATED: Emit real-time SOS alert via Socket.IO
-    const io = req.app.get("io");              // ✅ UPDATED
-    io.emit("sosAlert", {                     // ✅ UPDATED
+    // Emit real-time SOS alert via Socket.IO
+    const io = req.app.get("io");              
+    io.emit("sosAlert", {                     
       userId,
       message,
       latitude,
@@ -54,11 +55,10 @@ exports.sosAlert = async (req, res) => {
     });
 
     res.json({
-      message: "SOS alert saved & broadcasted", // ✅ UPDATED (text change)
-      alertId: alert._id
+      message: "SOS alert saved & broadcasted",       alertId: alert._id
     });
   } catch (err) {
-    console.error(err);                         // ✅ UPDATED (better debugging)
+    console.error(err);                         
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -76,7 +76,7 @@ exports.getUserAlerts = async (req, res) => {
       alerts
     });
   } catch (err) {
-    console.error(err);                         // ✅ UPDATED (better debugging)
+    console.error(err);                         
     res.status(500).json({ message: "Server error" });
   }
 };
