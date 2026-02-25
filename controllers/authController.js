@@ -56,11 +56,13 @@ exports.register = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("REGISTER API ERROR:", err);
+
+    res.status(500).json({
+      message: err?.message || "Server error"
+    });
   }
 };
-
 
 
 // Login (NO CHANGE)
