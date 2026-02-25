@@ -26,8 +26,19 @@ exports.register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ Only allow "admin" or default to "user"
-    const safeRole = role === "admin" ? "admin" : "user";
+    // (Vinuda) Only allow "blindUser", "caregiver"
+    const safeRole =
+      role === "blindUser"
+        ? "blindUser"
+        : role === "caregiver"
+          ? "caregiver"
+          : null;
+
+    if (!safeRole) {
+      return res.status(400).json({
+        message: "Invalid role selected"
+      });
+    }
 
     // ✅ UPDATED: Save fullName & phone
     const newUser = await User.create({
@@ -60,7 +71,7 @@ exports.login = async (req, res) => {
   if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
   if (user.isBlocked) {
-  return res.status(403).json({ message: "Your account is blocked" });
+    return res.status(403).json({ message: "Your account is blocked" });
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
