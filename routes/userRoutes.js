@@ -7,6 +7,8 @@ const userController = require("../controllers/userController");
 
 //  Logged-in user's own details
 router.get("/me", auth, userController.getMe);
+router.post("/connect", auth, userController.connectToFamily);
+
 
 //  Admin-only: block/unblock any user
 router.patch("/:id/block", auth, adminOnly, userController.blockUser);
