@@ -54,3 +54,38 @@ exports.unblockUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// PATCH /api/users/connect
+exports.connectToFamily = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { familyGroupId } = req.body;
+
+    if (!familyGroupId) {
+      return res.status(400).json({ message: "Family ID required" });
+    }
+
+    const caregiver = await User.findById(userId);
+
+    if (!caregiver || caregiver.role !== "caregiver") {
+      return res.status(403).json({ message: "Only caregivers can connect" });
+    }
+
+    const blindUser = await User.findOne({
+      familyGroupId,
+      role: "blindUser"
+    });
+
+    if (!blindUser) {
+      return res.status(404).json({ message: "Invalid QR code" });
+    }
+
+    caregiver.familyGroupId = familyGroupId;
+    await caregiver.save();
+
+    res.json({ message: "Connected successfully" });
+
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
