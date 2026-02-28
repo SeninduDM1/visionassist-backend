@@ -1,19 +1,22 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require("uuid");
 const User = require("../models/User");
 
-
-// Register
+// Register User
 exports.register = async (req, res) => {
   try {
-    const { fullName, phone, email, password, role } = req.body; // ✅ UPDATED
 
-    // ✅ UPDATED: Basic validation
-    if (!fullName || !phone || !email || !password) {
-      return res.status(400).json({ message: "All fields are required" });
+    const { fullName, phone, email, password, role } = req.body;
+
+    // ✅ Validation
+    if (!fullName || !phone || !email || !password || !role) {
+      return res.status(400).json({
+        message: "All fields are required"
+      });
     }
 
-    // ✅ UPDATED: Check duplicate email OR phone
+    // ✅ Check duplicate email OR phone
     const existingUser = await User.findOne({
       $or: [{ email }, { phone }]
     });
@@ -24,9 +27,10 @@ exports.register = async (req, res) => {
       });
     }
 
+    // ✅ Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // (Vinuda) Only allow "blindUser", "caregiver"
+    // ✅ Validate role
     const safeRole =
       role === "blindUser"
         ? "blindUser"
@@ -40,19 +44,29 @@ exports.register = async (req, res) => {
       });
     }
 
-    // ✅ UPDATED: Save fullName & phone
+    //  Family Group ID Logic (VERY IMPORTANT FOR YOU)
+    let familyGroupId = null;
+
+    // If blindUser to create group
+    if (safeRole === "blindUser") {
+      familyGroupId = uuidv4();
+    }
+
+    // Save user
     const newUser = await User.create({
       fullName,
       phone,
       email,
       password: hashedPassword,
-      role: safeRole
+      role: safeRole,
+      familyGroupId
     });
 
     res.json({
       message: "User registered successfully",
       userId: newUser._id,
-      role: newUser.role
+      role: newUser.role,
+      familyGroupId
     });
 
   } catch (err) {
@@ -69,7 +83,9 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
+  // 🔥 ONE LINE FIX
+  const user = await User.findOne({ email }).select('+role');
+
   if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
   if (user.isBlocked) {
@@ -80,10 +96,15 @@ exports.login = async (req, res) => {
   if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
 
   const token = jwt.sign(
-    { id: user._id, email: user.email, role: user.role },
+    { id: user._id, email: user.email, role: user.role }, // ✅ Now defined!
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
   );
 
-  res.json({ message: "Login successful", token });
+  res.json({
+    message: "Login successful",
+    token,
+    role: user.role  // ✅ Now "blindUser"!
+  });
 };
+
