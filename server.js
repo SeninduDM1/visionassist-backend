@@ -19,7 +19,8 @@ app.use(express.json());
 // Import routes
 const alertRoutes = require("./routes/alertRoutes");
 const authRoutes = require("./routes/authRoutes");
-const userRoutes = require("./routes/userRoutes"); 
+const userRoutes = require("./routes/userRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 // Basic test route
 app.get("/", (req, res) => {
@@ -29,7 +30,8 @@ app.get("/", (req, res) => {
 // Use routes
 app.use("/api/alert", alertRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes); 
+app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
 
 
 // Create HTTP server from Express app
