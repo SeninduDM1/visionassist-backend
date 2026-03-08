@@ -3,8 +3,8 @@ module.exports = (req, res, next) => {
     return res.status(401).json({ message: "Not authenticated" });
   }
 
-  if (req.user.role !== "admin") {
-    return res.status(403).json({ message: "Admin access required" });
+  if (req.user.role !== "super_admin") {
+    return res.status(403).json({ message: "Super admin access required" });
   }
 
   next();
